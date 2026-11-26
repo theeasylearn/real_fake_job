@@ -1,0 +1,7 @@
+i want to convert main.py file into fastapi. i will deploy this api on render.com 
+these things need to be done
+1. create requirements.txt file with all the dependencies
+2. create a new main.py file with the fastapi code. save old file  as main_old.py 
+3. remove unnessary code from main.py 
+4. save model into memory for performance 
+5. also generate document to call api with exmaple 
