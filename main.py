@@ -1,10 +1,11 @@
 """FastAPI service for Fake Job Posting Detection using Bernoulli Naive Bayes."""
+# https://real-fake-job.onrender.com/predict
 
 from contextlib import asynccontextmanager
 import os
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 import joblib
 import kagglehub
@@ -181,20 +182,28 @@ class JobPostingRequest(BaseModel):
     company_profile: str = Field(default="", description="Company overview/profile")
     requirements: str = Field(default="", description="Job requirements")
     benefits: str = Field(default="", description="Job benefits")
-    telecommuting: Literal[0, 1] = Field(
+    telecommuting: int = Field(
         default=0,
+        ge=0,
+        le=1,
         description="1 if remote/telecommuting, 0 otherwise",
     )
-    has_company_logo: Literal[0, 1] = Field(
+    has_company_logo: int = Field(
         default=0,
+        ge=0,
+        le=1,
         description="1 if posting includes a company logo, 0 otherwise",
     )
-    has_questions: Literal[0, 1] = Field(
+    has_questions: int = Field(
         default=0,
+        ge=0,
+        le=1,
         description="1 if posting includes screening questions, 0 otherwise",
     )
-    has_salary: Literal[0, 1] = Field(
+    has_salary: int = Field(
         default=0,
+        ge=0,
+        le=1,
         description="1 if salary range is specified, 0 otherwise",
     )
     threshold: Optional[float] = Field(
@@ -246,9 +255,8 @@ def health_check(request: Request):
     )
 
 
-@app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
-def predict_job_posting(payload: JobPostingRequest, request: Request):
-    """Predict whether a job posting is real (0) or fake/scam (1) using the in-memory model."""
+def _run_prediction(payload: JobPostingRequest, request: Request) -> PredictionResponse:
+    """Run fraud prediction for a validated job posting payload using the in-memory model."""
     artifacts = getattr(request.app.state, "artifacts", None)
     if artifacts is None:
         raise HTTPException(status_code=503, detail="Model is not loaded in memory.")
@@ -292,6 +300,21 @@ def predict_job_posting(payload: JobPostingRequest, request: Request):
         verdict=verdict,
         threshold=active_threshold,
     )
+
+
+@app.get("/predict", response_model=PredictionResponse, tags=["Prediction"])
+def predict_job_posting_get(
+    payload: Annotated[JobPostingRequest, Query()],
+    request: Request,
+):
+    """Predict whether a job posting is real (0) or fake/scam (1) via GET query parameters."""
+    return _run_prediction(payload, request)
+
+
+@app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
+def predict_job_posting_post(payload: JobPostingRequest, request: Request):
+    """Predict whether a job posting is real (0) or fake/scam (1) via POST JSON body."""
+    return _run_prediction(payload, request)
 
 
 if __name__ == "__main__":

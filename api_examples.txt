@@ -1,0 +1,149 @@
+====================================================================
+FAKE JOB POSTING DETECTION API - GET & POST CALL EXAMPLES
+====================================================================
+
+Deployed Endpoint:
+  https://real-fake-job.onrender.com/predict
+
+Local Endpoint:
+  http://127.0.0.1:8000/predict
+
+Required Fields:
+  - title (string, non-empty)
+  - description (string, non-empty)
+
+Optional Fields (defaults):
+  - company_profile (string, default "")
+  - requirements (string, default "")
+  - benefits (string, default "")
+  - telecommuting (0 or 1, default 0)
+  - has_company_logo (0 or 1, default 0)
+  - has_questions (0 or 1, default 0)
+  - has_salary (0 or 1, default 0)
+  - threshold (float 0.0 to 1.0, default null -> uses optimized threshold)
+
+
+--------------------------------------------------------------------
+1. CALLING /predict USING GET METHOD (Query Parameters)
+--------------------------------------------------------------------
+
+1A. Browser / Direct URL Example:
+https://real-fake-job.onrender.com/predict?title=Urgent%20Work%20From%20Home%20Data%20Entry%20Clerk&description=Immediate%20start%20no%20experience%20required%20daily%20cash%20payouts&requirements=Basic%20typing%20skills&benefits=Daily%20cash%20bonuses&telecommuting=1&has_company_logo=0&has_questions=0&has_salary=1
+
+1B. cURL (GET):
+curl -G "https://real-fake-job.onrender.com/predict" \
+  --data-urlencode "title=Urgent Work From Home Data Entry Clerk - Earn $3500/Week" \
+  --data-urlencode "description=Immediate start! No experience required. Earn daily cash payouts from home processing simple forms. Send bank details for direct wire transfer setup." \
+  --data-urlencode "requirements=Must have internet access and basic typing skills." \
+  --data-urlencode "benefits=Daily cash bonuses, flexible hours." \
+  --data-urlencode "telecommuting=1" \
+  --data-urlencode "has_company_logo=0" \
+  --data-urlencode "has_questions=0" \
+  --data-urlencode "has_salary=1"
+
+1C. Python requests (GET):
+import requests
+
+url = "https://real-fake-job.onrender.com/predict"
+params = {
+    "title": "Urgent Work From Home Data Entry Clerk - Earn $3500/Week",
+    "description": "Immediate start! No experience required. Earn daily cash payouts from home processing simple forms. Send bank details for direct wire transfer setup.",
+    "requirements": "Must have internet access and basic typing skills.",
+    "benefits": "Daily cash bonuses, flexible hours.",
+    "telecommuting": 1,
+    "has_company_logo": 0,
+    "has_questions": 0,
+    "has_salary": 1,
+}
+
+response = requests.get(url, params=params, timeout=30)
+response.raise_for_status()
+print(response.json())
+
+1D. JavaScript fetch (GET):
+const params = new URLSearchParams({
+  title: "Urgent Work From Home Data Entry Clerk - Earn $3500/Week",
+  description: "Immediate start! No experience required. Earn daily cash payouts from home processing simple forms. Send bank details for direct wire transfer setup.",
+  requirements: "Must have internet access and basic typing skills.",
+  benefits: "Daily cash bonuses, flexible hours.",
+  telecommuting: "1",
+  has_company_logo: "0",
+  has_questions: "0",
+  has_salary: "1",
+});
+
+const res = await fetch(`https://real-fake-job.onrender.com/predict?${params.toString()}`);
+const data = await res.json();
+console.log(data);
+
+
+--------------------------------------------------------------------
+2. CALLING /predict USING POST METHOD (JSON Body)
+--------------------------------------------------------------------
+
+2A. cURL (POST):
+curl -X POST "https://real-fake-job.onrender.com/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Urgent Work From Home Data Entry Clerk - Earn $3500/Week",
+    "description": "Immediate start! No experience required. Earn daily cash payouts from home processing simple forms. Send bank details for direct wire transfer setup.",
+    "requirements": "Must have internet access and basic typing skills.",
+    "benefits": "Daily cash bonuses, flexible hours.",
+    "telecommuting": 1,
+    "has_company_logo": 0,
+    "has_questions": 0,
+    "has_salary": 1
+  }'
+
+2B. Python requests (POST):
+import requests
+
+url = "https://real-fake-job.onrender.com/predict"
+payload = {
+    "title": "Senior Python Backend Engineer",
+    "description": "We are looking for an experienced backend engineer to design scalable REST APIs, optimize PostgreSQL queries, and maintain CI/CD pipelines.",
+    "company_profile": "Founded in 2016, CloudScale builds enterprise infrastructure monitoring tools.",
+    "requirements": "4+ years of experience with Python, Django or FastAPI, Docker, and AWS.",
+    "benefits": "Health insurance, 401(k) matching, annual learning stipend.",
+    "telecommuting": 0,
+    "has_company_logo": 1,
+    "has_questions": 1,
+    "has_salary": 1,
+}
+
+response = requests.post(url, json=payload, timeout=30)
+response.raise_for_status()
+print(response.json())
+
+2C. JavaScript fetch (POST):
+const res = await fetch("https://real-fake-job.onrender.com/predict", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    title: "Senior Python Backend Engineer",
+    description: "We are looking for an experienced backend engineer to design scalable REST APIs, optimize PostgreSQL queries, and maintain CI/CD pipelines.",
+    company_profile: "Founded in 2016, CloudScale builds enterprise infrastructure monitoring tools.",
+    requirements: "4+ years of experience with Python, Django or FastAPI, Docker, and AWS.",
+    benefits: "Health insurance, 401(k) matching, annual learning stipend.",
+    telecommuting: 0,
+    has_company_logo: 1,
+    has_questions: 1,
+    has_salary: 1,
+  }),
+});
+
+const data = await res.json();
+console.log(data);
+
+
+--------------------------------------------------------------------
+3. SAMPLE RESPONSE (Both GET and POST return the same JSON format)
+--------------------------------------------------------------------
+{
+  "title": "Urgent Work From Home Data Entry Clerk - Earn $3500/Week",
+  "fraud_score": 1.0,
+  "fraud_probability_percent": 100.0,
+  "predicted_class": 1,
+  "verdict": "FAKE / SCAM",
+  "threshold": 0.9999999596609549
+}
